@@ -1,63 +1,92 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import cookie from 'cookie';
-import { jwtVerify } from 'jose';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { cspMiddleware } from "./cspMiddleware";
+import cookie from "cookie";
+import { jwtVerify } from "jose";
 
-const SECRET_KEY = new TextEncoder().encode(process.env.SECRET_KEY || 'tok');
+const SECRET_KEY = new TextEncoder().encode(process.env.SECRET_KEY || "tok");
 
-const validateExpireTime = async (token :  string) => {
-    const { payload } = await jwtVerify(token, SECRET_KEY);
-    const currentTime = Math.floor(Date.now() / 1000);
+const validateExpireTime = async (token: string) => {
+  const { payload } = await jwtVerify(token, SECRET_KEY);
+  const currentTime = Math.floor(Date.now() / 1000);
 
-    if (payload.exp && currentTime > payload.exp) {
-        return false;
-    }
+  if (payload.exp && currentTime > payload.exp) {
+    return false;
+  }
 
-    return true;
-}
+  return true;
+};
 
 const requiresLogin = () => {
-    return ['/welcome', '/api', '/']
-}
+  return ["/welcome", "/api", "/"];
+};
+
+const csp = () => {
+  const array = new Uint8Array(16);
+  self.crypto.getRandomValues(array);
+  const nonce = btoa(String.fromCharCode(...array));
+
+  const csp = `
+        default-src 'self'; 
+        script-src 'self' 'nonce-${nonce}'; 
+        style-src 'self' 'unsafe-inline'; 
+        img-src 'self' data:; 
+        font-src 'self'; 
+        connect-src 'self'; 
+        media-src 'self'; 
+        object-src 'none'; 
+        frame-src 'none'; 
+        base-uri 'self'; 
+        form-action 'self'; 
+        manifest-src 'self'; 
+        worker-src 'self'; 
+        frame-ancestors 'none';`;
+
+  return { csp, nonce };
+};
 
 export async function authMiddleware(req: NextRequest) {
-    const { pathname } = req.nextUrl;
-    console.log('pathname', pathname)
+  const { pathname } = req.nextUrl;
+  let response = NextResponse.next();
 
-    if (!pathname) {
-        return NextResponse.next();
-    }
+  const { csp: cspHeader, nonce } = csp();
+  response.headers.set(
+    "Content-Security-Policy",
+    cspHeader.replace(/\s{2,}/g, " ").trim()
+  );
 
-    const validatePage = requiresLogin().includes(pathname);
-    console.log('validatePage', validatePage)
-    // Apply authentication check only to the /welcome route
-    if (validatePage) {
-        const cookies = cookie.parse(req.headers.get('cookie') || '');
-        const token = cookies.token;
-        console.log('token', token)
-        if (!token) {
-            return NextResponse.redirect(new URL('/signup', req.url));
-        }
+  response.headers.set("x-nonce", "12345");
 
-        if (!await validateExpireTime(token)) {
-            const response = NextResponse.redirect(new URL('/signup', req.url));
-            response.cookies.delete('token');
-            return response;
-        }
-         
-        // Set the authorization header
-        return NextResponse.next();
-    } else if (pathname === '/login' || pathname === '/signup') {
-        console.log('enter')
-        const cookies = cookie.parse(req.headers.get('cookie') || '');
-        const token = cookies.token;
-
-        if (token && await validateExpireTime(token)) {
-            return NextResponse.redirect(new URL('/welcome', req.url));
-        }
-    }
-    console.log('enter second')
+  if (!pathname) {
     return NextResponse.next();
+  }
+
+  const validatePage = requiresLogin().includes(pathname);
+  // Apply authentication check only to the /welcome route
+  if (validatePage) {
+    const cookies = cookie.parse(req.headers.get("cookie") || "");
+    const token = cookies.token;
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    if (!(await validateExpireTime(token))) {
+      const response = NextResponse.redirect(new URL("/login", req.url));
+      response.cookies.delete("token");
+      return response;
+    }
+
+    // Set the authorization header
+    return NextResponse.next();
+  } else if (pathname === "/login" || pathname === "/signup") {
+    const cookies = cookie.parse(req.headers.get("cookie") || "");
+    const token = cookies.token;
+
+    if (token && (await validateExpireTime(token))) {
+      return NextResponse.redirect(new URL("/welcome", req.url));
+    }
+  }
+  return response;
 }
 
 /* export const config = {

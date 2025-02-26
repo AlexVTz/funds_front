@@ -16,7 +16,7 @@ const WelcomePage: React.FC = () => {
 
         if (response.ok) {
             setUser(null);
-            router.push('/signup');
+            router.push('/login');
         }
 
 
@@ -27,7 +27,7 @@ const WelcomePage: React.FC = () => {
             const userData = await fetchUser();
             setUser(userData);
         } catch (error) {
-            router.push('/signup');
+            router.push('/login');
         }
     };
 
