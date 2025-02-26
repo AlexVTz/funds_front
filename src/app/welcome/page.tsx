@@ -32,7 +32,7 @@ const WelcomePage: React.FC = () => {
 
   useEffect(() => {
     getUserData();
-  }, [setUser, router]);
+  }, []);
 
   console.log(user);
 
