@@ -1,28 +1,26 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { authMiddleware} from './middleware/authMiddleware';
-import { cspMiddleware } from './middleware/cspMiddleware';
+import type { NextRequest } from "next/server";
+import { authMiddleware } from "./middleware/authMiddleware";
 
 export async function middleware(req: NextRequest) {
-    return authMiddleware(req);
+  return authMiddleware(req);
 
-    // Apply CSP middleware first to set the nonce
-    //const cspResponse = cspMiddleware(req);
+  // Apply CSP middleware first to set the nonce
+  //const cspResponse = cspMiddleware(req);
 
-    // Apply Auth middleware
-    /* const authResponse = await authMiddleware(req);
+  // Apply Auth middleware
+  /* const authResponse = await authMiddleware(req);
     console.log(authResponse) */
 
-    // If authMiddleware returns a redirect response, return it immediately
-    /* if (authResponse) {
+  // If authMiddleware returns a redirect response, return it immediately
+  /* if (authResponse) {
         return authResponse;
     } */
 
-    // Combine responses
-    //const response = NextResponse.next();
+  // Combine responses
+  //const response = NextResponse.next();
 
-    // Merge headers from both middlewares
-    /* cspResponse.headers.forEach((value, key) => {
+  // Merge headers from both middlewares
+  /* cspResponse.headers.forEach((value, key) => {
         response.headers.set(key, value);
     });
 

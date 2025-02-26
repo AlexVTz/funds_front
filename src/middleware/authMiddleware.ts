@@ -47,7 +47,7 @@ const csp = () => {
 
 export async function authMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  let response = NextResponse.next();
+  const response = NextResponse.next();
 
   const { csp: cspHeader, nonce } = csp();
   response.headers.set(
@@ -55,7 +55,7 @@ export async function authMiddleware(req: NextRequest) {
     cspHeader.replace(/\s{2,}/g, " ").trim()
   );
 
-  response.headers.set("x-nonce", "12345");
+  response.headers.set("x-nonce", nonce);
 
   if (!pathname) {
     return NextResponse.next();

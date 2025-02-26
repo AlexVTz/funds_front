@@ -1,10 +1,9 @@
-import { NextResponse, NextRequest} from 'next/server';
+import { NextResponse } from "next/server";
 
 export function POST() {
-    const response = NextResponse.json({ message: 'Logged out successfully' });
+  const response = NextResponse.json({ message: "Logged out successfully" });
 
+  response.cookies.delete("token");
 
-    response.cookies.delete('token');
-
-    return response;
+  return response;
 }
