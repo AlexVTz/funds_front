@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { fetchUser } from "@/services/userService";
@@ -29,10 +29,6 @@ const WelcomePage: React.FC = () => {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    getUserData();
-  }, []);
 
   console.log(user);
 
