@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { cspMiddleware } from "./cspMiddleware";
-import cookie from "cookie";
+import * as cookie from "cookie";
 import { jwtVerify } from "jose";
 
 const SECRET_KEY = new TextEncoder().encode(process.env.SECRET_KEY || "tok");
