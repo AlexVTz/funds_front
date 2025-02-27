@@ -20,7 +20,7 @@ const requiresLogin = () => {
   return ["/welcome", "/api", "/"];
 };
 
-const csp = () => {
+/* const csp = () => {
   const array = new Uint8Array(16);
   self.crypto.getRandomValues(array);
   const nonce = btoa(String.fromCharCode(...array));
@@ -42,19 +42,19 @@ const csp = () => {
         frame-ancestors 'none';`;
 
   return { csp, nonce };
-};
+}; */
 
 export async function authMiddleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const response = NextResponse.next();
 
-  const { csp: cspHeader, nonce } = csp();
+  /* const { csp: cspHeader, nonce } = csp();
   response.headers.set(
     "Content-Security-Policy",
     cspHeader.replace(/\s{2,}/g, " ").trim()
   );
 
-  response.headers.set("x-nonce", nonce);
+  response.headers.set("x-nonce", nonce); */
 
   if (!pathname) {
     return NextResponse.next();
